@@ -7,7 +7,7 @@
 #include "cuda_runtime.h"
 #include "device_launch_parameters.h"
 #include <numeric>
-using namespace std;
+// using namespace std;
 
 __global__ void sum(int* input)
 {
