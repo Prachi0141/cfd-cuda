@@ -9,7 +9,7 @@
 #include <numeric>
 // using namespace std;
 
-__global__ void sum(int* input)
+__global__ void sum(float* input)
 {
 	const int tid = threadIdx.x;
     input[tid] = input[tid] * input[tid];
