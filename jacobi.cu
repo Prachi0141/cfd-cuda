@@ -8,19 +8,25 @@ __global__ void jacobikernel(double *psi_d, double *psinew_d, int m, int n, int 
     // calculate each thread's global row and col
     int row = blockIdx.y * blockDim.y + threadIdx.y;
     int col = blockIdx.x * blockDim.x + threadIdx.x;
+    int SHMEN_SIZE = sizeof(double) * (m + 2) * (n + 2);
+
+    __shared__ int s_a[SHMEM_SIZE];
+    s_a[row * (m + 2) + col] = psi_d[row * (m + 2) + col];
 
     if (row > 0 && row <= m && col > 0 && col <= n) {
         for (int i = 1; i <= numiter; i++) {
             d_error = 0;
             psinew_d[row * (m + 2) + col] =
-                    0.25f * (psi_d[(row - 1) * (m + 2) + col] + psi_d[(row + 1) * (m + 2) + col] +
-                             psi_d[(row) * (m + 2) + col - 1] + psi_d[(row) * (m + 2) + col + 1]);
+                    0.25f * (s_a[(row - 1) * (m + 2) + col] + s_a[(row + 1) * (m + 2) + col] +
+                             s_a[(row) * (m + 2) + col - 1] + s_a[(row) * (m + 2) + col + 1]);
 
             __syncthreads();
-            psi_d[row * (m + 2) + col] = psinew_d[row * (m + 2) + col];
+            s_a[row * (m + 2) + col] = psinew_d[row * (m + 2) + col];
             __syncthreads();
         }
     }
+    psi_d[row * (m + 2) + col] = s_a[row * (m + 2) + col];
+    
 }
 
 //void jacobistep(double *psinew, double *psi, int m, int n) {
@@ -32,19 +38,19 @@ __global__ void jacobikernel(double *psi_d, double *psinew_d, int m, int n, int 
 //    }
 //}
 
-void jacobiiter_gpu(double *psi, int m, int n, int numiter, double &error) {
+void jacobiiter_gpu(double *psi, double *psitmp, int m, int n, int numiter, double &error) {
 
-    double *psi_d;
-    double *psinew_d;
-    size_t bytes = sizeof(double) * (m + 2) * (n + 2);
+//     double *psi_d;
+//     double *psinew_d;
+//     size_t bytes = sizeof(double) * (m + 2) * (n + 2);
 
-    // allocate memory on gpu
-    cudaMalloc(&psi_d, bytes);
-    cudaMalloc(&psinew_d, bytes);
+//     // allocate memory on gpu
+//     cudaMalloc(&psi_d, bytes);
+//     cudaMalloc(&psinew_d, bytes);
 
-    // copy data to gpu
-    cudaMemcpy(psi_d, psi, bytes, cudaMemcpyHostToDevice);
-//    cudaMemcpy(psinew_d, psinew, bytes, cudaMemcpyHostToDevice);
+//     // copy data to gpu
+//     cudaMemcpy(psi_d, psi, bytes, cudaMemcpyHostToDevice);
+// //    cudaMemcpy(psinew_d, psinew, bytes, cudaMemcpyHostToDevice);
 
     int THREADS = 16;
     int BLOCKS = (m + 2 + THREADS - 1) / THREADS;
@@ -52,9 +58,9 @@ void jacobiiter_gpu(double *psi, int m, int n, int numiter, double &error) {
     dim3 threads(THREADS, THREADS);
     dim3 blocks(BLOCKS, BLOCKS);
 
-    jacobikernel<<<blocks, threads>>>(psi_d, psinew_d, m, n, numiter);
+    jacobikernel<<<blocks, threads>>>(psi, psitmp, m, n, numiter);
 
-    cudaMemcpy(psi, psi_d, bytes, cudaMemcpyDeviceToHost);
+    // cudaMemcpy(psi, psi_d, bytes, cudaMemcpyDeviceToHost);
 //
 //    for (int i = 0; i<(m+2)*(n+2); i++){
 //        std::cout<<psi[i]<<" ";
@@ -64,8 +70,8 @@ void jacobiiter_gpu(double *psi, int m, int n, int numiter, double &error) {
 //    cudaMemcpyFromSymbol(&e, "d_error", sizeof(e), 0, cudaMemcpyDeviceToHost);
 //    error = e;
 
-    cudaFree(psi_d);
-    cudaFree(psinew_d);
+    // cudaFree(psi_d);
+    // cudaFree(psinew_d);
 }
 
 // parallelise

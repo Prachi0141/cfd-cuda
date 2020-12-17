@@ -45,12 +45,30 @@ int main(int argc, char **argv) {
 
     std::cout << "Running CFD on" << m << " x " << n << " grid.\n";
 
-    psi = new double[(m + 2) * (n + 2)];
-    psitmp = new double[(m + 2) * (n + 2)];
+    size_t bytes = sizeof(double) * (m + 2) * (n + 2);
+
+    // psi = new double[(m + 2) * (n + 2)];
+    // psitmp = new double[(m + 2) * (n + 2)];
+
+    cudaMallocManaged(&psi, bytes);
+    cudaMallocManaged(&psitmp, bytes);
+
+    // Get the device ID for prefetching calls
+    int id = cudaGetDevice(&id);
+
+    // Set some hints about the data and do some prefetching
+    cudaMemAdvise(psi, bytes, cudaMemAdviseSetPreferredLocation, cudaCpuDeviceId);
+    // cudaMemAdvise(psitmp, bytes, cudaMemAdviseSetPreferredLocation, cudaCpuDeviceId);
+    cudaMemPrefetchAsync(psitmp, bytes, id);
 
     for (int i = 0; i < (m + 2) * (n + 2); i++) {
         psi[i] = 0;
     }
+    // Pre-fetch 'psi' arrays to the specified device (GPU)
+    cudaMemAdvise(psi, bytes, cudaMemAdviseSetReadMostly, id);
+    // cudaMemAdvise(b, bytes, cudaMemAdviseSetReadMostly, id);
+    cudaMemPrefetchAsync(psi, bytes, id);
+    // cudaMemPrefetchAsync(b, bytes, id);
 
     //set the psi boundary conditions
     boundarypsi(psi, m, n, b, h, w);
@@ -89,8 +107,15 @@ int main(int argc, char **argv) {
 //            std::cout << "Completed iteration " << iter << "\n";
 //        }
 //    }
+    int THREADS = 16;
+    int BLOCKS = (m + 2 + THREADS - 1) / THREADS;
 
-    jacobiiter_gpu(psi, m, n, numiter, error);
+    dim3 threads(THREADS, THREADS);
+    dim3 blocks(BLOCKS, BLOCKS);
+
+    jacobikernel<<<blocks, threads>>>(psi, psitmp, m, n, numiter);
+
+    // jacobiiter_gpu(psi, psitmp, m, n, numiter, err or);
 
 //    if (iter > numiter)iter = numiter;
     std::cout << "\n...finished\n";
