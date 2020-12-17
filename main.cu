@@ -48,7 +48,7 @@ int main(int argc, char **argv) {
     size_t bytes = sizeof(double) * (m + 2) * (n + 2);
 
     psi = new double[(m + 2) * (n + 2)];
-    psitmp = new double[(m + 2) * (n + 2)];
+    // psitmp = new double[(m + 2) * (n + 2)];
 
     // cudaMallocManaged(&psi, bytes);
     // cudaMallocManaged(&psitmp, bytes);
@@ -115,7 +115,7 @@ int main(int argc, char **argv) {
 
 //     jacobikernel<<<blocks, threads>>>(psi, psitmp, m, n, numiter);
 
-    jacobiiter_gpu(psi, psitmp, m, n, numiter, error);
+    jacobiiter_gpu(psi, m, n, numiter, error);
 
 //    if (iter > numiter)iter = numiter;
     std::cout << "\n...finished\n";

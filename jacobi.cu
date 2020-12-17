@@ -39,7 +39,7 @@ __global__ void jacobikernel(double *psi_d, double *psinew_d, int m, int n, int 
 //    }
 //}
 
-void jacobiiter_gpu(double *psi, double *psitmp, int m, int n, int numiter, double &error) {
+void jacobiiter_gpu(double *psi, int m, int n, int numiter, double &error) {
 
     double *psi_d;
     double *psinew_d;
