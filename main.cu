@@ -47,28 +47,28 @@ int main(int argc, char **argv) {
 
     size_t bytes = sizeof(double) * (m + 2) * (n + 2);
 
-    // psi = new double[(m + 2) * (n + 2)];
-    // psitmp = new double[(m + 2) * (n + 2)];
+    psi = new double[(m + 2) * (n + 2)];
+    psitmp = new double[(m + 2) * (n + 2)];
 
-    cudaMallocManaged(&psi, bytes);
-    cudaMallocManaged(&psitmp, bytes);
+    // cudaMallocManaged(&psi, bytes);
+    // cudaMallocManaged(&psitmp, bytes);
 
     // Get the device ID for prefetching calls
     int id = cudaGetDevice(&id);
 
-    // Set some hints about the data and do some prefetching
-    cudaMemAdvise(psi, bytes, cudaMemAdviseSetPreferredLocation, cudaCpuDeviceId);
-    // cudaMemAdvise(psitmp, bytes, cudaMemAdviseSetPreferredLocation, cudaCpuDeviceId);
-    cudaMemPrefetchAsync(psitmp, bytes, id);
+    // // Set some hints about the data and do some prefetching
+    // cudaMemAdvise(psi, bytes, cudaMemAdviseSetPreferredLocation, cudaCpuDeviceId);
+    // // cudaMemAdvise(psitmp, bytes, cudaMemAdviseSetPreferredLocation, cudaCpuDeviceId);
+    // cudaMemPrefetchAsync(psitmp, bytes, id);
 
     for (int i = 0; i < (m + 2) * (n + 2); i++) {
         psi[i] = 0;
     }
-    // Pre-fetch 'psi' arrays to the specified device (GPU)
-    cudaMemAdvise(psi, bytes, cudaMemAdviseSetReadMostly, id);
-    // cudaMemAdvise(b, bytes, cudaMemAdviseSetReadMostly, id);
-    cudaMemPrefetchAsync(psi, bytes, id);
-    // cudaMemPrefetchAsync(b, bytes, id);
+    // // Pre-fetch 'psi' arrays to the specified device (GPU)
+    // cudaMemAdvise(psi, bytes, cudaMemAdviseSetReadMostly, id);
+    // // cudaMemAdvise(b, bytes, cudaMemAdviseSetReadMostly, id);
+    // cudaMemPrefetchAsync(psi, bytes, id);
+    // // cudaMemPrefetchAsync(b, bytes, id);
 
     //set the psi boundary conditions
     boundarypsi(psi, m, n, b, h, w);
