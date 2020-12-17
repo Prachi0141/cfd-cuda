@@ -26,6 +26,7 @@ __global__ void jacobikernel(double *psi_d, double *psinew_d, int m, int n, int 
         }
     }
     psi_d[row * (m + 2) + col] = s_a[row * (m + 2) + col];
+    __syncthreads();
 
 }
 
