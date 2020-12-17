@@ -106,16 +106,16 @@ int main(int argc, char **argv) {
 //        if (iter % printfreq == 0) {
 //            std::cout << "Completed iteration " << iter << "\n";
 //        }
-//    }
-    int THREADS = 16;
-    int BLOCKS = (m + 2 + THREADS - 1) / THREADS;
+// //    }
+//     int THREADS = 16;
+//     int BLOCKS = (m + 2 + THREADS - 1) / THREADS;
 
-    dim3 threads(THREADS, THREADS);
-    dim3 blocks(BLOCKS, BLOCKS);
+//     dim3 threads(THREADS, THREADS);
+//     dim3 blocks(BLOCKS, BLOCKS);
 
-    jacobikernel<<<blocks, threads>>>(psi, psitmp, m, n, numiter);
+//     jacobikernel<<<blocks, threads>>>(psi, psitmp, m, n, numiter);
 
-    // jacobiiter_gpu(psi, psitmp, m, n, numiter, err or);
+    jacobiiter_gpu(psi, psitmp, m, n, numiter, error);
 
 //    if (iter > numiter)iter = numiter;
     std::cout << "\n...finished\n";
