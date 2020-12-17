@@ -8,7 +8,7 @@ __global__ void jacobikernel(double *psi_d, double *psinew_d, int m, int n, int 
     // calculate each thread's global row and col
     int row = blockIdx.y * blockDim.y + threadIdx.y;
     int col = blockIdx.x * blockDim.x + threadIdx.x;
-    int SHMEN_SIZE = sizeof(double) * (m + 2) * (n + 2);
+    int SHMEM_SIZE = sizeof(double) * (m + 2) * (n + 2);
 
     __shared__ int s_a[SHMEM_SIZE];
     s_a[row * (m + 2) + col] = psi_d[row * (m + 2) + col];
@@ -26,7 +26,7 @@ __global__ void jacobikernel(double *psi_d, double *psinew_d, int m, int n, int 
         }
     }
     psi_d[row * (m + 2) + col] = s_a[row * (m + 2) + col];
-    
+
 }
 
 //void jacobistep(double *psinew, double *psi, int m, int n) {
