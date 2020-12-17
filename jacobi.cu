@@ -3,7 +3,7 @@
 
 __device__ double d_error;
 const int SHMEM_SIZE = 1 << 10;
-__global__ void jacobikernel(double *psi_d, double *psinew_d, int m, int n, int numiter) {
+__global__ void jacobikernel(double *psi, double *psitmp, int m, int n, int numiter) {
 
     // calculate each thread's global row and col
     int row = blockIdx.y * blockDim.y + threadIdx.y;
@@ -11,21 +11,21 @@ __global__ void jacobikernel(double *psi_d, double *psinew_d, int m, int n, int 
     // int SHMEM_SIZE = sizeof(double) * (m + 2) * (n + 2);
 
     __shared__ int s_a[SHMEM_SIZE];
-    s_a[row * (m + 2) + col] = psi_d[row * (m + 2) + col];
+    s_a[row * (m + 2) + col] = psi[row * (m + 2) + col];
 
     if (row > 0 && row <= m && col > 0 && col <= n) {
         for (int i = 1; i <= numiter; i++) {
             d_error = 0;
-            psinew_d[row * (m + 2) + col] =
+            psitmp[row * (m + 2) + col] =
                     0.25f * (s_a[(row - 1) * (m + 2) + col] + s_a[(row + 1) * (m + 2) + col] +
                              s_a[(row) * (m + 2) + col - 1] + s_a[(row) * (m + 2) + col + 1]);
 
             __syncthreads();
-            s_a[row * (m + 2) + col] = psinew_d[row * (m + 2) + col];
+            s_a[row * (m + 2) + col] = psitmp[row * (m + 2) + col];
             __syncthreads();
         }
     }
-    psi_d[row * (m + 2) + col] = s_a[row * (m + 2) + col];
+    psi[row * (m + 2) + col] = s_a[row * (m + 2) + col];
     __syncthreads();
 
 }

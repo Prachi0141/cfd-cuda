@@ -119,6 +119,7 @@ int main(int argc, char **argv) {
 
 //    if (iter > numiter)iter = numiter;
     std::cout << "\n...finished\n";
+    error = 0.0
     std::cout << "After " << numiter << " iterations, the error is " << error << "\n";
 
     //write output files
